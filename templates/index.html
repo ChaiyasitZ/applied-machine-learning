@@ -8,7 +8,11 @@
     <style>
         body {
             padding: 20px;
-            background-color: #f8f9fa;
+            background-image: url('https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8Zm9yZXN0JTIwYmFja2dyb3VuZHxlbnwwfHwwfHx8MA%3D%3D');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-position: center;
         }
         .container {
             max-width: 800px;
@@ -27,6 +31,9 @@
             max-height: 300px;
             margin-top: 10px;
             border-radius: 5px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
         }
         .result-container {
             margin-top: 20px;
@@ -84,7 +91,7 @@
         <div class="result-container" id="resultContainer">
             <h4 class="text-center mb-4">Classification Results:</h4>
             <div class="text-center mb-3">
-                <h5>Top Prediction: <span id="topPrediction"></span></h5>
+                <h5 cl>Top Prediction: <span id="topPrediction"></span></h5>
                 <p>Confidence: <span id="confidence"></span>%</p>
             </div>
             

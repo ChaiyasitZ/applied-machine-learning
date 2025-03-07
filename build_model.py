@@ -3,8 +3,12 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Dense, GlobalAveragePooling2D
 import tensorflow as tf
 import matplotlib.pyplot as plt
+import seaborn as sns
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
+from sklearn.metrics import classification_report, confusion_matrix
+import numpy as np
+import pandas as pd
 
 # Image augmentation and normalization
 train_datagen = ImageDataGenerator(
@@ -21,11 +25,12 @@ val_data = val_test_datagen.flow_from_directory(
     "wildlife_dataset/val", target_size=(224, 224), batch_size=32, class_mode='categorical'
 )
 test_data = val_test_datagen.flow_from_directory(
-    "wildlife_dataset/test", target_size=(224, 224), batch_size=32, class_mode='categorical'
+    "wildlife_dataset/test", target_size=(224, 224), batch_size=32, class_mode='categorical', shuffle=False
 )
 
 # Automatically detect the number of classes
 NUM_CLASSES = len(train_data.class_indices)
+class_labels = list(train_data.class_indices.keys())
 print(f"Detected {NUM_CLASSES} classes:", train_data.class_indices)
 
 # Load MobileNetV2 with pre-trained ImageNet weights
@@ -60,13 +65,35 @@ history = model.fit(train_data, validation_data=val_data, epochs=EPOCHS, callbac
 test_loss, test_accuracy = model.evaluate(test_data)
 print(f"Test Accuracy: {test_accuracy:.4f}")
 
+# Predictions
+test_data.reset()
+Y_pred = model.predict(test_data)
+y_pred = np.argmax(Y_pred, axis=1)
+y_true = test_data.classes
+
+# Classification report
+report = classification_report(y_true, y_pred, target_names=test_data.class_indices.keys())
+print("Classification Report:")
+print(report)
+
+# Confusion matrix
+conf_matrix = confusion_matrix(y_true, y_pred)
+plt.figure(figsize=(12, 8))
+sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues", xticklabels=class_labels, yticklabels=class_labels)
+plt.xlabel("Predicted Labels")
+plt.ylabel("True Labels")
+plt.title("Confusion Matrix")
+plt.show()
+
 # Save final model
 model.save("wildlife_classifier.h5")
 
 # Plot training history
+plt.figure(figsize=(8, 5))
 plt.plot(history.history['accuracy'], label='Train Accuracy')
 plt.plot(history.history['val_accuracy'], label='Val Accuracy')
 plt.xlabel('Epochs')
 plt.ylabel('Accuracy')
 plt.legend()
+plt.title('Training & Validation Accuracy')
 plt.show()
