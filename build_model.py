@@ -19,14 +19,19 @@ val_test_datagen = ImageDataGenerator(rescale=1./255)
 
 # Load dataset
 train_data = train_datagen.flow_from_directory(
-    "wildlife_dataset/train", target_size=(224, 224), batch_size=32, class_mode='categorical'
+    "wildlife_dataset/train", target_size=(224, 224), batch_size=64, class_mode='categorical'
 )
 val_data = val_test_datagen.flow_from_directory(
-    "wildlife_dataset/val", target_size=(224, 224), batch_size=32, class_mode='categorical'
+    "wildlife_dataset/val", target_size=(224, 224), batch_size=64, class_mode='categorical'
 )
 test_data = val_test_datagen.flow_from_directory(
-    "wildlife_dataset/test", target_size=(224, 224), batch_size=32, class_mode='categorical', shuffle=False
+    "wildlife_dataset/test", target_size=(224, 224), batch_size=64, class_mode='categorical', shuffle=False
 )
+
+# Print the number of images in each dataset
+print(f"Number of training images: {train_data.samples}")
+print(f"Number of validation images: {val_data.samples}")
+print(f"Number of test images: {test_data.samples}")
 
 # Automatically detect the number of classes
 NUM_CLASSES = len(train_data.class_indices)
@@ -42,7 +47,7 @@ x = base_model.output
 x = GlobalAveragePooling2D()(x)
 x = Dense(256, activation="relu")(x)
 x = Dense(128, activation="relu")(x)
-output_layer = Dense(NUM_CLASSES, activation="softmax")(x)  # Dynamically set number of output neurons
+output_layer = Dense(NUM_CLASSES, activation="softmax")(x)
 
 # Create model
 model = Model(inputs=base_model.input, outputs=output_layer)
@@ -58,8 +63,7 @@ callbacks = [
 ]
 
 # Train the model
-EPOCHS = 20
-history = model.fit(train_data, validation_data=val_data, epochs=EPOCHS, callbacks=callbacks)
+history = model.fit(train_data, validation_data=val_data, epochs=12, callbacks=callbacks)
 
 # Evaluate the model on the test data
 test_loss, test_accuracy = model.evaluate(test_data)

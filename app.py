@@ -4,6 +4,7 @@ import numpy as np
 from PIL import Image
 import io
 import os
+from pyngrok import ngrok
 
 app = Flask(__name__)
 
@@ -32,34 +33,44 @@ def index():
 def predict():
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'})
-    
+
     file = request.files['file']
     if file.filename == '':
         return jsonify({'error': 'No selected file'})
-    
+
     if file:
         # Read and preprocess the image
         img_bytes = file.read()
         img_array = preprocess_image(img_bytes)
-        
+
         # Make prediction
         predictions = model.predict(img_array)
         predicted_class_index = np.argmax(predictions[0])
         predicted_class = class_names[predicted_class_index]
         confidence = float(predictions[0][predicted_class_index])
-        
+
         # Get top 3 predictions for display
         top_indices = predictions[0].argsort()[-3:][::-1]
         top_results = [
             {"class": class_names[i], "confidence": float(predictions[0][i])}
             for i in top_indices
         ]
-        
+
         return jsonify({
             'prediction': predicted_class,
             'confidence': confidence,
             'top_results': top_results
         })
 
+def run_with_ngrok():
+    # Set up ngrok
+    port = 5000
+    public_url = ngrok.connect(port).public_url
+    print(f" * Running on {public_url}")
+    app.config["BASE_URL"] = public_url
+    
+    # Start Flask app
+    app.run(debug=False, port=port)
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    run_with_ngrok()
